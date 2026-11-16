@@ -27,6 +27,7 @@ import {
 import { formatInr } from '@retail-management/contracts'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { ReportingPeriod, type PeriodValue } from './ReportingPeriod'
 import {
   deleteOrder,
   fetchOrders,
@@ -67,7 +68,7 @@ export function Shell({
   const [modal, setModal] = useState<Modal>(null)
   const [selected, setSelected] = useState<OrderView | null>(null)
   const [toast, setToast] = useState('')
-  const [dateRange, setDateRange] = useState('This month')
+  const [dateRange, setDateRange] = useState<PeriodValue>({ label: 'This month' })
 
   const ordersQuery = useQuery({
     queryKey: ['orders', query, status],
@@ -134,7 +135,7 @@ export function Shell({
     <main className={`workspace ${collapsed ? 'sidebar-collapsed' : ''}`}>
       <header className="topbar"><button className="icon-btn menu-toggle" onClick={() => window.innerWidth < 800 ? setMobileOpen(true) : setCollapsed(!collapsed)} aria-label="Toggle navigation"><IconMenu2 size={19}/></button><div><h1>{active === 'dashboard' ? 'Dashboard' : active === 'orders' ? 'Orders' : 'Message Log'}</h1><p>{active === 'dashboard' ? 'Overview' : active === 'orders' ? 'Manage credit sales' : 'WhatsApp communication history'}</p></div><div className="topbar-actions" title={me.user.email}><div className="avatar">{me.user.name.slice(0, 2).toUpperCase()}</div></div></header>
       <div className="page-content">
-        {active === 'dashboard' && <Dashboard dateRange={dateRange} setDateRange={setDateRange}/>} 
+        {active === 'dashboard' && <Dashboard dateRange={dateRange} setDateRange={setDateRange}/>}
         {active === 'orders' && <OrdersPage orders={filteredOrders} loading={ordersQuery.isLoading} query={query} setQuery={setQuery} status={status} setStatus={setStatus} openOrder={openOrder} onBulk={() => setModal('bulk')} onDelete={(id: string) => void handleDeleteOrder(id)}/>} 
         {active === 'messages' && <MessageLog/>}
       </div>
@@ -162,12 +163,12 @@ export function Shell({
 function NavItem({ icon, label, active, collapsed, onClick }: { icon: React.ReactNode; label: string; active?: boolean; collapsed: boolean; onClick: () => void }) { return <button className={`nav-item ${active ? 'active' : ''}`} onClick={onClick} title={collapsed ? label : undefined}>{icon}<span>{label}</span></button> }
 function LogOutIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg> }
 
-function Dashboard({ dateRange, setDateRange }: { dateRange: string; setDateRange: (v: string) => void }) { return <>
-  <div className="page-heading-row"><div><h2>Good morning, Yuvraj</h2><p>Here&apos;s what&apos;s happening with your store today.</p></div><div className="date-filter"><span>Reporting period</span><select value={dateRange} onChange={e => setDateRange(e.target.value)}>{['Today','Yesterday','Last 7 days','This month','Last month','This year','Custom range'].map(x => <option key={x}>{x}</option>)}</select></div></div>
+function Dashboard({ dateRange, setDateRange }: { dateRange: PeriodValue; setDateRange: (v: PeriodValue) => void }) { return <>
+  <div className="page-heading-row"><div><h2>Good morning, Yuvraj</h2><p>Here&apos;s what&apos;s happening with your store today.</p></div><div className="date-filter"><ReportingPeriod value={dateRange} onChange={setDateRange}/></div></div>
   <section className="kpi-grid">{[['Total outstanding','₹1,86,300','', IconWallet],['Overdue amount','₹1,37,600','danger', IconAlertCircle],['Overdue customers','13','danger', IconUsers],['Collected so far','₹2,11,900','', IconCreditCard],['Total orders','31','', IconClipboardList]].map(([label, value, tone, Icon]) => <div className={`kpi-card ${tone}`} key={label as string}><div className="kpi-top"><span>{label as string}</span><span className="kpi-icon"><Icon size={16}/></span></div><strong>{value as string}</strong><small>{label === 'Total orders' ? '+4 this month' : label === 'Collected so far' ? '64% of total billed' : 'Across all orders'}</small></div>)}</section>
   <div className="section-title"><div><h3>Sales overview</h3><p>Track order volume and payment progress</p></div><button className="ghost-btn"><IconDots size={18}/></button></div>
   <section className="analytics-grid"><div className="panel chart-panel"><div className="panel-header"><div><h3>Orders by status</h3><p>31 total orders</p></div><span className="chart-kebab">•••</span></div><div className="donut-wrap"><div className="donut"><div className="donut-center"><strong>31</strong><span>orders</span></div></div></div><div className="legend"><span><i className="dot slate"/>Pending <b>6</b></span><span><i className="dot amber"/>Partial <b>17</b></span><span><i className="dot green"/>Paid <b>8</b></span></div></div>
-  <div className="panel chart-panel"><div className="panel-header"><div><h3>Orders by month</h3><p>Order date · 2026</p></div><span className="chart-kebab">•••</span></div><div className="bar-chart"><div className="y-axis"><span>15</span><span>10</span><span>5</span><span>0</span></div><div className="bars">{[['Jul','3'],['Aug','4'],['Sep','8'],['Oct','14'],['Nov','2']].map(([month, val]) => <div className="bar-col" key={month}><div className="bar" style={{height: `${Number(val) / 15 * 150}px`}}><span>{val}</span></div><small>{month}</small></div>)}</div></div></div></section>
+  <div className="panel chart-panel"><div className="panel-header"><div><h3>Orders by month</h3><p>Order date · 2026</p></div><span className="chart-kebab">•••</span></div><div className="bar-chart"><div className="y-axis"><span>15</span><span>10</span><span>5</span><span>0</span></div><div className="bars">{[['Jul','3'],['Aug','4'],['Sep','8'],['Oct','14'],['Nov','2']].map(([month, val]) => <div className="bar-col" key={month}><div className="bar" style={{height: `${Number(val) * 11}px`}}><span>{val}</span></div><small>{month}</small></div>)}</div></div></div></section>
 </> }
 
 function OrdersPage({ orders, loading, query, setQuery, status, setStatus, openOrder, onBulk, onDelete }: any) { return <>
