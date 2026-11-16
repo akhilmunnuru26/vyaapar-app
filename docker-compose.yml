@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - '5434:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vyaapar_dev
+    volumes:
+      - vyaapar_pg_data:/var/lib/postgresql/data
+
+volumes:
+  vyaapar_pg_data:

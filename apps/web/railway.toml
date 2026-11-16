@@ -1,0 +1,12 @@
+# LEGACY Config-as-Code (deprecated for new Railway services). Use .railway/railway.ts instead.
+# Point Railway to this file (absolute path): /apps/web/railway.toml
+# Repo root directory for the service should stay at / (monorepo root).
+
+[build]
+builder = "nixpacks"
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @retail-management/web build"
+watchPatterns = ["apps/web/**", "packages/contracts/**"]
+
+[deploy]
+startCommand = "pnpm --filter @retail-management/web start"
+restartPolicyType = "ON_FAILURE"
